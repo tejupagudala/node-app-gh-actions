@@ -1,9 +1,9 @@
 name: Scan on PR
 
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   pull_request:
     branches:
       - main
@@ -79,53 +79,53 @@ jobs:
             owasp-report.html
             trivy-results.txt
 
-  build_and_push:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    #needs: security_scan
-    if: github.event_name == 'push'  # Run only on push to main
-    env:
-      AWS_REGION: "ap-south-1"
+  # build_and_push:
+  #   name: Build & Push Docker Image
+  #   runs-on: ubuntu-latest
+  #   #needs: security_scan
+  #   if: github.event_name == 'push'  # Run only on push to main
+  #   env:
+  #     AWS_REGION: "ap-south-1"
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          audience: sts.amazonaws.com
-          aws-region: ${{ env.AWS_REGION }} 
+  #     - name: Configure AWS Credentials (OIDC)
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+  #         audience: sts.amazonaws.com
+  #         aws-region: ${{ env.AWS_REGION }} 
 
-      - name: Login to AWS ECR
-        run: |
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+  #     - name: Login to AWS ECR
+  #       run: |
+  #         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
 
-      - name: Build Docker Image
-        run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY }}:latest .
-          docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+  #     - name: Build Docker Image
+  #       run: |
+  #         docker build -t ${{ secrets.ECR_REPOSITORY }}:latest .
+  #         docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
 
-      - name: Push Docker Image to ECR
-        run: docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+  #     - name: Push Docker Image to ECR
+  #       run: docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
 
-  deploy:
-    name: Deploy to AWS ECS
-    runs-on: ubuntu-latest
-    needs: build_and_push
-    if: github.event_name == 'push'  # Run only on push to main
-    env:
-      AWS_REGION: "ap-south-1"
+  # deploy:
+  #   name: Deploy to AWS ECS
+  #   runs-on: ubuntu-latest
+  #   needs: build_and_push
+  #   if: github.event_name == 'push'  # Run only on push to main
+  #   env:
+  #     AWS_REGION: "ap-south-1"
 
-    steps:
-      - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          audience: sts.amazonaws.com
-          aws-region: ${{ env.AWS_REGION }}
+  #   steps:
+  #     - name: Configure AWS Credentials (OIDC)
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+  #         audience: sts.amazonaws.com
+  #         aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update ECS Task Definition
-        run: |
-          aws ecs update-service --cluster test-node-app --service test-node-app --force-new-deployment
+  #     - name: Update ECS Task Definition
+  #       run: |
+  #         aws ecs update-service --cluster test-node-app --service test-node-app --force-new-deployment
