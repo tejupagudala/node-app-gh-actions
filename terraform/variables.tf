@@ -83,6 +83,24 @@ variable "containerInsights" {
 # Application Load Balancer
 #------------------------------------------------------------------------------
 
+variable "lb_http_ports" {
+  description = "HTTP listener and target group configuration"
+  type        = map(any)
+  default = {
+    default_http = {
+      type              = "forward"
+      listener_port     = 80
+      target_group_port = 3000
+    }
+  }
+}
+
+variable "lb_https_ports" {
+  description = "HTTPS listener and target group configuration"
+  type        = map(any)
+  default     = {}
+}
+
 variable "lb_enable_cross_zone_load_balancing" {
   type        = string
   default     = "true"
