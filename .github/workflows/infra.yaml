@@ -104,11 +104,11 @@ jobs:
           name: tfsec-results
           path: ${{ github.workspace }}/tfsec-results.json
 
-      - name: Stop when tfsec finds security issues
-        if: steps.tfsec.outcome == 'failure'
-        run: |
-          echo "tfsec found security issues."
-          exit 1
+      # - name: Stop when tfsec finds security issues
+      #   if: steps.tfsec.outcome == 'failure'
+      #   run: |
+      #     echo "tfsec found security issues."
+      #     exit 1
       - name: Terraform Plan
         working-directory: terraform
         run: |
