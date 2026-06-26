@@ -98,13 +98,12 @@ variable "lb_enable_cross_zone_load_balancing" {
 }
 
 variable "lb_https_ports" {
-  description = "Map containing objects to define listeners behaviour based on type field. If type field is `forward`, include listener_port and the target_group_port. For `redirect` type, include listener port, host, path, port, protocol, query and status_code. For `fixed-response`, include listener_port, content_type, message_body and status_code"
+  description = "HTTPS listener and target group configuration"
   type        = map(any)
   default = {
     default = {
-      listener_port         = 443
-      target_group_port     = 3000
-      target_group_protocol = "HTTP"
+      listener_port     = 80
+      target_group_port = 3000
     }
   }
 }
