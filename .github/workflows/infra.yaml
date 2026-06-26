@@ -34,6 +34,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          audience: sts.amazonaws.com
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: infra-${{ github.run_id }}
           unset-current-credentials: true
@@ -59,7 +60,7 @@ jobs:
           
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init -input=false -reconfigure
+        run: terraform init -input=false -reconfigure -backend-config=vars/test/test.backend.tfvars
 
       - name: Terraform Format
         working-directory: terraform
