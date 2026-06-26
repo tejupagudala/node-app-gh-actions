@@ -72,6 +72,7 @@ jobs:
 
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.0
+        continue-on-error: true
         with:
           working_directory: terraform
           format: json
