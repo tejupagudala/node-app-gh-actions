@@ -38,3 +38,9 @@ variable "common_tags" {
   description = "Common tags"
   type        = map(string)
 }
+
+variable "enable_s3_logs" {
+  description = "Whether to enable S3 logging permissions"
+  type        = bool
+  default     = false
+}
