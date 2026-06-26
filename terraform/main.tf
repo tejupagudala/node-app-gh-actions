@@ -115,6 +115,7 @@ module "s3" {
   log_bucket_name = var.log_bucket_name
   common_tags     = var.common_tags
   aws_region      = var.region
+  enable_s3_logs  = var.enable_s3_logs
 }
 
 #WAF Module

@@ -101,10 +101,7 @@ variable "lb_https_ports" {
   description = "HTTPS listener and target group configuration"
   type        = map(any)
   default = {
-    default = {
-      listener_port     = 80
-      target_group_port = 3000
-    }
+    default = {}
   }
 }
 
