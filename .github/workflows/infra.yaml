@@ -71,25 +71,44 @@ jobs:
         run: terraform validate
 
       - name: Terraform Security Scan
-        uses: aquasecurity/tfsec-action@v1.0.0
+        id: tfsec
         continue-on-error: true
+        uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform
           format: json
-          additional_args: "--out tfsec-results.json"
-      
-      - name: Show tfsec findings
-        working-directory: terraform
-        run: jq '.results[] | {rule_id, description, severity, location}' tfsec-results.json
+          additional_args: "--out /github/workspace/tfsec-results.json"
 
-      
-      - name: Upload tfsec results
+      - name: Display tfsec findings
+        if: always()
+        run: |
+          ls -la "${{ github.workspace }}"
+
+          if [ -f "${{ github.workspace }}/tfsec-results.json" ]; then
+            jq '.results[] | {
+              rule_id,
+              description,
+              severity,
+              location
+            }' "${{ github.workspace }}/tfsec-results.json"
+          else
+            echo "tfsec-results.json was not created"
+            find "${{ github.workspace }}" -name "*tfsec*" -print
+            exit 1
+          fi
+
+      - name: Upload tfsec report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: tfsec-results
-          path: tfsec-results.json
+          path: ${{ github.workspace }}/tfsec-results.json
 
+      - name: Stop when tfsec finds security issues
+        if: steps.tfsec.outcome == 'failure'
+        run: |
+          echo "tfsec found security issues."
+          exit 1
       - name: Terraform Plan
         working-directory: terraform
         run: |
