@@ -30,7 +30,7 @@ variable "alb_account_ids" {
   description = "AWS ALB service account IDs for different regions"
   type        = map(string)
   default = {
-    "ap-south-1" = "637423357784"
+    "us-east-2" = "033677994240"
   }
 }
 
