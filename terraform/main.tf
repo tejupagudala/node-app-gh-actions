@@ -28,50 +28,50 @@ module "kms" {
 }
 
 # ACM certificate
-resource "aws_acm_certificate" "node_app" {
-  domain_name       = var.domain_name
-  validation_method = "DNS"
+# resource "aws_acm_certificate" "node_app" {
+#   domain_name       = var.domain_name
+#   validation_method = "DNS"
 
-  lifecycle {
-    create_before_destroy = true
-  }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
 
-  tags = var.common_tags
-}
+#   tags = var.common_tags
+# }
 
 # DNS records used to prove domain ownership
-resource "aws_route53_record" "certificate_validation" {
-  for_each = {
-    for option in aws_acm_certificate.node_app.domain_validation_options :
-    option.domain_name => {
-      name   = option.resource_record_name
-      record = option.resource_record_value
-      type   = option.resource_record_type
-    }
-  }
+# resource "aws_route53_record" "certificate_validation" {
+#   for_each = {
+#     for option in aws_acm_certificate.node_app.domain_validation_options :
+#     option.domain_name => {
+#       name   = option.resource_record_name
+#       record = option.resource_record_value
+#       type   = option.resource_record_type
+#     }
+#   }
 
-  zone_id = var.hosted_zone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.record]
-  ttl     = 60
-}
+#   zone_id = var.hosted_zone_id
+#   name    = each.value.name
+#   type    = each.value.type
+#   records = [each.value.record]
+#   ttl     = 60
+# }
 
 # Wait until ACM validates and issues the certificate
-resource "aws_acm_certificate_validation" "node_app" {
-  certificate_arn = aws_acm_certificate.node_app.arn
+# resource "aws_acm_certificate_validation" "node_app" {
+#   certificate_arn = aws_acm_certificate.node_app.arn
 
-  validation_record_fqdns = [
-    for record in aws_route53_record.certificate_validation :
-    record.fqdn
-  ]
-}
+#   validation_record_fqdns = [
+#     for record in aws_route53_record.certificate_validation :
+#     record.fqdn
+#   ]
+# }
 
 # ECS Module
 module "ecs" {
   source = "./modules/ecs"
 
-  certificate_arn = aws_acm_certificate_validation.node_app.certificate_arn
+
 
   environment                                    = var.env
   region                                         = var.region
@@ -101,13 +101,13 @@ module "ecs" {
 }
 
 # Route53 Module
-module "route53" {
-  source         = "./modules/route53"
-  alb_dns_name   = module.ecs.aws_lb_lb_dns_name
-  alb_zone_id    = module.ecs.aws_lb_lb_zone_id
-  domain_name    = var.domain_name
-  hosted_zone_id = var.hosted_zone_id
-}
+# module "route53" {
+#   source         = "./modules/route53"
+#   alb_dns_name   = module.ecs.aws_lb_lb_dns_name
+#   alb_zone_id    = module.ecs.aws_lb_lb_zone_id
+#   domain_name    = var.domain_name
+#   hosted_zone_id = var.hosted_zone_id
+# }
 
 # S3 Module
 module "s3" {

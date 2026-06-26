@@ -198,7 +198,7 @@ module "ecs-alb" {
   private_subnets                  = var.private_subnets
   public_subnets                   = var.public_subnets
   enable_cross_zone_load_balancing = var.lb_enable_cross_zone_load_balancing
-  default_certificate_arn          = var.certificate_arn
+  # default_certificate_arn          = var.certificate_arn
   # Access Control to Application Load Balancer
   http_ports                = var.lb_http_ports
   https_ports               = var.lb_https_ports
@@ -302,7 +302,10 @@ resource "aws_ecs_service" "node-app" {
     container_port   = 3000
   }
 
-  depends_on = [module.td]
+  depends_on = [
+    module.ecs-alb,
+    module.td
+  ]
 }
 
 

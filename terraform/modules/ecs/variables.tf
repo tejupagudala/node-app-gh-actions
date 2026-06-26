@@ -251,7 +251,7 @@ variable "enable_execute_command" {
   default     = true
 }
 
-variable "certificate_arn" {
-  description = "ACM certificate ARN for the HTTPS listener"
-  type        = string
-}
+# variable "certificate_arn" {
+#   description = "ACM certificate ARN for the HTTPS listener"
+#   type        = string
+# }
