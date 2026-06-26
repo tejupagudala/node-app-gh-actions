@@ -250,3 +250,8 @@ variable "enable_execute_command" {
   type        = bool
   default     = true
 }
+
+variable "certificate_arn" {
+  description = "ACM certificate ARN for the HTTPS listener"
+  type        = string
+}

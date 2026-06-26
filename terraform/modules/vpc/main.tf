@@ -98,16 +98,18 @@ resource "aws_route_table_association" "private-route-2-association" {
 #    aws_eip.nat-gw-eip
 #}
 
+resource "aws_eip" "nat-gw-eip" {
+  domain = "vpc"
+
+  tags = var.common_tags
+}
+
 # Create a NAT Gateway in public subnet 1
 resource "aws_nat_gateway" "nat-gw" {
   allocation_id = aws_eip.nat-gw-eip.id
   subnet_id     = aws_subnet.public-subnet-1.id
 
   tags = var.common_tags
-
-  depends_on = [
-    aws_eip.nat-gw-eip
-  ]
 }
 
 # Create a route in the private route table to route traffic through the NAT Gateway

@@ -17,7 +17,7 @@ variable "env" {
 }
 variable "region" {
   type    = string
-  default = "ap-south-1"
+  default = "us-east-2"
 }
 
 variable "private_subnet_1_cidr" {
