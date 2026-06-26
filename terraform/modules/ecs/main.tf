@@ -46,7 +46,7 @@ resource "aws_ecr_repository" "main" {
 }
 
 resource "aws_ecr_repository_policy" "ecr_policies" {
-  repository = var.ecr_repository_name
+  repository = aws_ecr_repository.main.name
   policy     = data.aws_iam_policy_document.ecr_cross_account_access.json
 }
 
@@ -297,7 +297,7 @@ resource "aws_ecs_service" "node-app" {
   }
 
   load_balancer {
-    target_group_arn = module.ecs-alb.lb_https_tgs_arns[0]
+    target_group_arn = module.ecs-alb.lb_http_tgs_arns[0]
     container_name   = var.name
     container_port   = 3000
   }
@@ -320,4 +320,3 @@ module "ecs-autoscaling" {
   ecs_service_name = aws_ecs_service.node-app.name
 
 }
-

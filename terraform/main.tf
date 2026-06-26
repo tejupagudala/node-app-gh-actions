@@ -84,6 +84,8 @@ module "ecs" {
   vpc_id                                         = module.vpc.vpc_id
   containerInsights                              = var.containerInsights
   lb_enable_cross_zone_load_balancing            = var.lb_enable_cross_zone_load_balancing
+  lb_http_ports                                  = var.lb_http_ports
+  lb_https_ports                                 = var.lb_https_ports
   http_ingress_cidr_blocks                       = var.http_ingress_cidr_blocks
   https_ingress_cidr_blocks                      = var.https_ingress_cidr_blocks
   enable_s3_logs                                 = var.enable_s3_logs
