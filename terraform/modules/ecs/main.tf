@@ -171,10 +171,10 @@ module "ecs-cluster" {
 # AWS LOAD BALANCER
 #------------------------------------------------------------------------------
 
-data "aws_acm_certificate" "node_app_cert" {
-  domain   = "*.demoprojectbc1.com"
-  statuses = ["ISSUED"]
-}
+# data "aws_acm_certificate" "node_app_cert" {
+#   domain   = "*.demoprojectbc1.com"
+#   statuses = ["ISSUED"]
+# }
 
 module "ecs-alb" {
 
@@ -198,7 +198,7 @@ module "ecs-alb" {
   private_subnets                  = var.private_subnets
   public_subnets                   = var.public_subnets
   enable_cross_zone_load_balancing = var.lb_enable_cross_zone_load_balancing
-  default_certificate_arn          = data.aws_acm_certificate.node_app_cert.arn
+  default_certificate_arn          = var.certificate_arn
   # Access Control to Application Load Balancer
   http_ports                = var.lb_http_ports
   https_ports               = var.lb_https_ports

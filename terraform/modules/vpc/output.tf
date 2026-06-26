@@ -20,7 +20,7 @@ output "private_route_table_id" {
   value = aws_route_table.private-route-table.id
 }
 output "nat_gw_eip" {
-  value = aws_eip.nat-gw-eip
+  value = aws_eip.nat-gw-eip.public_ip
 }
 output "nat_gw_id" {
   value = aws_nat_gateway.nat-gw.id
