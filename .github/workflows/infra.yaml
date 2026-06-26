@@ -76,6 +76,18 @@ jobs:
           working_directory: terraform
           format: json
           additional_args: "--out tfsec-results.json"
+      
+      - name: Show tfsec findings
+        working-directory: terraform
+        run: jq '.results[] | {rule_id, description, severity, location}' tfsec-results.json
+
+      
+      - name: Upload tfsec results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfsec-results
+          path: tfsec-results.json
 
       - name: Terraform Plan
         working-directory: terraform
