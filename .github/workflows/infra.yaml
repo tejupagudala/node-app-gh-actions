@@ -1,4 +1,5 @@
-name: "Terraform CI/CD" #test
+name: "Terraform CI/CD"
+
 on:
   push:
     branches:
@@ -6,21 +7,12 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/infra.yaml"
-  #pull_request:
-  #  branches:
-  #    - main
+
   workflow_dispatch:
-    inputs:
-      name:
-        type: choice
-        description: which env
-        options: 
-        - dev
-        - test
-        - prod
+
 permissions:
-    id-token: write
-    contents: read
+  id-token: write
+  contents: read
 
 concurrency:
   group: terraform-main
@@ -30,36 +22,35 @@ jobs:
   terraform:
     name: "Terraform Plan & Apply"
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
 
     env:
-      AWS_REGION: "us-east-2"
+      AWS_REGION: us-east-2
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-2
+          aws-region: ${{ env.AWS_REGION }}
           role-session-name: infra-${{ github.run_id }}
-          
+
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.3.0
+          terraform_version: 1.15.7
 
+      - name: Show Terraform Version
+        run: terraform version
 
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
 
       - name: Terraform Format
         working-directory: terraform
@@ -73,19 +64,17 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform
-          #soft_fail: true  # This option prevents tfsec from failing the pipeline
-          format: "json"
+          format: json
           additional_args: "--out tfsec-results.json"
 
       - name: Terraform Plan
         working-directory: terraform
-        run: terraform plan -var-file=vars/test/test.tfvars -out=tfplan
+        run: |
+          terraform plan \
+            -input=false \
+            -var-file=vars/test/test.tfvars \
+            -out=tfplan
 
       - name: Terraform Apply
         working-directory: terraform
-        run: terraform apply -auto-approve tfplan 
-
-      #- name: Manual Approval
-      #  uses: hmarr/auto-approve-action@v2
-      #  if: github.event_name == 'pull_request'
-
+        run: terraform apply -input=false -auto-approve tfplan
