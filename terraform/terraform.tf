@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket       = "tejupagudala-node-app-tfstate-589077667712"
+    bucket       = "anikamoments140224"
     key          = "hire/node-app/terraform.tfstate"
-    region       = "ap-south-2"
+    region       = "ap-south-1"
     encrypt      = true
     use_lockfile = true
   }
