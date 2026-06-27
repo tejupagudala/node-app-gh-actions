@@ -14,6 +14,12 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: node-app
+  ECS_CLUSTER: test-node-app
+  ECS_SERVICE: test-node-app
+
 jobs:
   security_scan:
     name: Security Scanning
@@ -101,10 +107,30 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           audience: sts.amazonaws.com
           aws-region: ${{ env.AWS_REGION }} 
+          role-session-name: deploy-${{ github.run_id }} 
+          unset-current-credentials: true 
+          output-env-credentials: true
+      
+      - name: Verify AWS Identity 
+        run: aws sts get-caller-identity 
+      
+      - name: Confirm ECR Repository Exists 
+        run: | 
+          aws ecr describe-repositories \ 
+           --repository-names "$ECR_REPOSITORY" \ 
+           --region "$AWS_REGION"
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+      
+
+      - name: Build and Push Docker Image 
+        env: 
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }} 
+          IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }} 
+        run: | 
+            test -n "$ECR_REGISTRY"
 
       - name: Build Docker Image
         env:
@@ -117,11 +143,16 @@ jobs:
             "${ECR_REPOSITORY}:${IMAGE_TAG}" \
             "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
               run: |
-                docker build -t ${{ secrets.ECR_REPOSITORY }}:latest .
-                docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+                docker build -t "${ECR_REPOSITORY}:${IMAGE_TAG}" .
+                docker tag "${ECR_REPOSITORY}:${IMAGE_TAG}" \
+            "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
             - name: Push Docker Image to ECR
-              run: docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:latest
+              env:
+                ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                IMAGE_TAG: latest
+              run: |
+                docker push "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
   deploy:
     name: Deploy to AWS ECS
