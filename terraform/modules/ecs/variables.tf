@@ -59,7 +59,8 @@ variable "ecr_pull_accounts" {
   type        = list(string)
   description = "A list of AWS accounts that will have pull access from ECR repositories"
   default = [
-    "637423357784", # test account
+    "637423357784",
+    "589077667712" # test account
   ]
 }
 
