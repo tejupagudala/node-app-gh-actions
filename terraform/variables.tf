@@ -87,7 +87,7 @@ variable "lb_http_ports" {
   description = "HTTP listener and target group configuration"
   type        = map(any)
   default = {
-    default_http = {
+    default = {
       type              = "forward"
       listener_port     = 80
       target_group_port = 3000
