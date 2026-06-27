@@ -1,1 +1,11 @@
 node_modules/
+
+# Terraform generated files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+tfplan
+
+# Local license file
+LICENSE.txt
