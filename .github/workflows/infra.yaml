@@ -1,15 +1,9 @@
 name: "Terraform CI/CD"
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
-    paths:
-      - "terraform/**"
-      - ".github/workflows/infra.yaml"
 
   workflow_dispatch:
 
@@ -121,6 +115,7 @@ jobs:
             -var-file=vars/test/test.tfvars \
             -out=tfplan
 
-      - name: Terraform Apply
-        working-directory: terraform
+      - name: Terraform Apply 
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
+        working-directory: terraform 
         run: terraform apply -input=false -auto-approve tfplan
