@@ -114,11 +114,11 @@ jobs:
       - name: Verify AWS Identity 
         run: aws sts get-caller-identity 
       
-      - name: Confirm ECR Repository Exists 
-        run: | 
-          aws ecr describe-repositories \ 
-           --repository-names "$ECR_REPOSITORY" \ 
-           --region "$AWS_REGION"
+      - name: Confirm ECR Repository Exists
+        run: |
+          aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION"
 
       - name: Login to Amazon ECR
         id: login-ecr
