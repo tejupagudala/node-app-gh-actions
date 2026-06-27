@@ -185,7 +185,7 @@ module "ecs-alb" {
   name_prefix = var.name
   vpc_id      = var.vpc_id
 
-  
+
 
   # Application Load Balancer Logs
   enable_s3_logs = var.enable_s3_logs
