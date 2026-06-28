@@ -60,6 +60,7 @@ variable "ecr_pull_accounts" {
   description = "A list of AWS accounts that will have pull access from ECR repositories"
   default = [
     "637423357784",
+    "103672973552",
     "589077667712" # test account
   ]
 }
