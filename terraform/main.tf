@@ -273,3 +273,43 @@ resource "aws_s3_bucket_replication_configuration" "primary_to_dr" {
     aws_s3_bucket_versioning.dr_test,
   ]
 }
+
+# DR-region ECR repository for failover deployments.
+resource "aws_ecr_repository" "dr" {
+  count    = var.enable_ecr_replication ? 1 : 0
+  provider = aws.dr
+  name     = var.ecr_repository
+
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = merge(var.common_tags, {
+    Name   = var.ecr_repository
+    Region = var.dr_region
+    Role   = "dr"
+  })
+}
+
+# Registry-level rule that replicates images from the primary region to the DR region.
+resource "aws_ecr_replication_configuration" "dr" {
+  count = var.enable_ecr_replication ? 1 : 0
+
+  replication_configuration {
+    rule {
+      destination {
+        region      = var.dr_region
+        registry_id = data.aws_caller_identity.current.account_id
+      }
+
+      repository_filter {
+        filter      = var.ecr_repository
+        filter_type = "PREFIX_MATCH"
+      }
+    }
+  }
+
+  depends_on = [aws_ecr_repository.dr]
+}

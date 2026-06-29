@@ -1,6 +1,6 @@
 env                       = "test"
 region                    = "us-east-2"
-dr_region                 = "ap-south-ap-soth-2"
+dr_region                 = "ap-south-2"
 project                   = "hire"
 name                      = "node-app"
 vpc_cidr                  = "10.0.0.0/16"
@@ -18,7 +18,7 @@ log_bucket_name           = "tejupagudala-node-app-network-logs-589077667712-us-
 primary_bucket_name       = "tejupagudala-node-app-dr-primary-demo"
 dr_bucket_name            = "tejupagudala-node-app-dr-secondary-demo"
 enable_dr_replication     = true
-enable_ecr_replication = true
+enable_ecr_replication    = true
 enable_s3_logs            = false
 waf_name                  = "node-app-waf"
 enable_waf                = false
