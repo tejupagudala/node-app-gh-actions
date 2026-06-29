@@ -20,6 +20,31 @@ variable "region" {
   default = "us-east-2"
 }
 
+variable "dr_region" {
+  type    = string
+  default = "ap-south-2"
+}
+
+variable "primary_bucket_name" {
+  type = string
+}
+
+variable "dr_bucket_name" {
+  type = string
+}
+
+variable "enable_dr_replication" {
+  description = "Enable S3 cross-region replication from the primary DR test bucket to the DR test bucket."
+  type        = bool
+  default     = false
+}
+
+variable "enable_ecr_replication" {
+  description = "Enable ECR cross-region replication to the DR region."
+  type        = bool
+  default     = false
+}
+
 variable "private_subnet_1_cidr" {
   type = string
 }
