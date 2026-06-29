@@ -129,3 +129,147 @@ module "waf" {
   aws_region  = var.region
   alb_arn     = module.ecs.aws_lb_lb_arn
 }
+
+resource "aws_s3_bucket" "primary_dr_test" {
+  # Primary-region bucket used as the replication source.
+  bucket = var.primary_bucket_name
+
+  tags = {
+    Name   = "primary-dr-test"
+    Region = var.region
+    Role   = "primary"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "primary_dr_test" {
+  # Versioning is required on the source bucket for S3 replication.
+  bucket = aws_s3_bucket.primary_dr_test.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket" "dr_test" {
+  # DR-region bucket created through the aliased provider.
+  provider = aws.dr
+  bucket   = var.dr_bucket_name
+
+  tags = {
+    Name   = "dr-test"
+    Region = var.dr_region
+    Role   = "dr"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "dr_test" {
+  # Versioning is also required on the destination bucket.
+  provider = aws.dr
+  bucket   = aws_s3_bucket.dr_test.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+data "aws_iam_policy_document" "s3_replication_assume_role" {
+  # Trust policy so the S3 service can assume the replication role.
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "s3_replication" {
+  # IAM role assumed by S3 when it copies objects to the DR bucket.
+  count = var.enable_dr_replication ? 1 : 0
+  name  = "${var.project}-${var.name}-${var.env}-s3-replication"
+
+  assume_role_policy = data.aws_iam_policy_document.s3_replication_assume_role.json
+}
+
+data "aws_iam_policy_document" "s3_replication" {
+  # Permissions S3 needs to read from the source bucket and write to the DR bucket.
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetReplicationConfiguration",
+      "s3:ListBucket",
+    ]
+    resources = [
+      aws_s3_bucket.primary_dr_test.arn,
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObjectVersionForReplication",
+      "s3:GetObjectVersionAcl",
+      "s3:GetObjectVersionTagging",
+    ]
+    resources = [
+      "${aws_s3_bucket.primary_dr_test.arn}/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ReplicateObject",
+      "s3:ReplicateDelete",
+      "s3:ReplicateTags",
+    ]
+    resources = [
+      "${aws_s3_bucket.dr_test.arn}/*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "s3_replication" {
+  # Managed policy created from the replication permissions document.
+  count  = var.enable_dr_replication ? 1 : 0
+  name   = "${var.project}-${var.name}-${var.env}-s3-replication"
+  policy = data.aws_iam_policy_document.s3_replication.json
+}
+
+resource "aws_iam_role_policy_attachment" "s3_replication" {
+  # Attaches the replication policy to the role assumed by S3.
+  count      = var.enable_dr_replication ? 1 : 0
+  role       = aws_iam_role.s3_replication[0].name
+  policy_arn = aws_iam_policy.s3_replication[0].arn
+}
+
+resource "aws_s3_bucket_replication_configuration" "primary_to_dr" {
+  # Turns on cross-region replication from the primary bucket to the DR bucket.
+  count  = var.enable_dr_replication ? 1 : 0
+  bucket = aws_s3_bucket.primary_dr_test.id
+  role   = aws_iam_role.s3_replication[0].arn
+
+  rule {
+    id     = "replicate-to-dr"
+    status = "Enabled"
+
+    filter {}
+
+    delete_marker_replication {
+      status = "Enabled"
+    }
+
+    destination {
+      bucket        = aws_s3_bucket.dr_test.arn
+      storage_class = "STANDARD_IA"
+    }
+  }
+
+  depends_on = [
+    aws_s3_bucket_versioning.primary_dr_test,
+    aws_s3_bucket_versioning.dr_test,
+  ]
+}

@@ -1,5 +1,6 @@
 env                       = "test"
 region                    = "us-east-2"
+dr_region                 = "ap-south-ap-soth-2"
 project                   = "hire"
 name                      = "node-app"
 vpc_cidr                  = "10.0.0.0/16"
@@ -14,6 +15,10 @@ https_ingress_cidr_blocks = ["93.174.85.223/32"]
 hosted_zone_id            = "Z01826962DLG7GTIHZO1Q"
 domain_name               = "node-app.demoprojectbc1.com"
 log_bucket_name           = "tejupagudala-node-app-network-logs-589077667712-us-east-2"
+primary_bucket_name       = "tejupagudala-node-app-dr-primary-demo"
+dr_bucket_name            = "tejupagudala-node-app-dr-secondary-demo"
+enable_dr_replication     = true
+enable_ecr_replication = true
 enable_s3_logs            = false
 waf_name                  = "node-app-waf"
 enable_waf                = false
